@@ -1,6 +1,6 @@
 # MCP GraphQL Server
 
-A Model Context Protocol (MCP) server for exposing GraphQL APIs as MCP tools. This server demonstrates how to bridge any GraphQL API (public or Microsoft Fabric) to the MCP ecosystem, enabling natural language and programmatic access via MCP clients like Cursor.
+A Model Context Protocol (MCP) server for exposing GraphQL APIs as MCP tools. This server demonstrates how to bridge GraphQL APIs (Public or Microsoft Fabric) to the MCP ecosystem, enabling natural language and programmatic access via MCP clients like Cursor.
 
 ## Features
 
@@ -20,7 +20,10 @@ A Model Context Protocol (MCP) server for exposing GraphQL APIs as MCP tools. Th
 
 This server connects to a Microsoft Fabric GraphQL API using OAuth2 client credentials. Credentials and endpoint are provided via a `.env` file.
 
-> **Important:** You must configure Service Principal access for your Microsoft Entra app and Fabric workspace as described in the [official Microsoft documentation](https://learn.microsoft.com/en-us/fabric/data-engineering/api-graphql-service-principal). This includes enabling Service Principals in the Fabric Tenant Admin portal and granting the required permissions to your app.
+> **Important:**
+>
+> - You must configure Service Principal access for your Microsoft Entra app and Fabric workspace as described in the [official Microsoft documentation](https://learn.microsoft.com/en-us/fabric/data-engineering/api-graphql-service-principal). This includes enabling Service Principals in the Fabric Tenant Admin portal and granting the required permissions to your app.
+> - **Introspection must be enabled on your Fabric GraphQL API for the MCP server to work.** By default, introspection is disabled and must be enabled by a Workspace Admin in the Fabric portal. For details, see the [Fabric API for GraphQL introspection and schema export documentation](https://learn.microsoft.com/en-us/fabric/data-engineering/api-graphql-introspection-schema-export).
 
 #### Setup
 
@@ -47,6 +50,7 @@ This server connects to a Microsoft Fabric GraphQL API using OAuth2 client crede
 - The server will automatically obtain and refresh an access token for Microsoft Fabric.
 - All requests to the Fabric API are authenticated.
 - See [Microsoft's documentation](https://learn.microsoft.com/en-us/fabric/data-engineering/api-graphql-service-principal) for full details on configuring Service Principal access.
+- See [Fabric API for GraphQL introspection and schema export](https://learn.microsoft.com/en-us/fabric/data-engineering/api-graphql-introspection-schema-export) for enabling introspection and exporting your schema.
 
 ### 2. Public GraphQL API Option (`mcpServer_publicAPI.js`)
 
