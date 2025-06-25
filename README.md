@@ -17,6 +17,8 @@ A Model Context Protocol (MCP) server for exposing GraphQL APIs as MCP tools. Th
 
 This server connects to a Microsoft Fabric GraphQL API using OAuth2 client credentials. Credentials and endpoint are provided via a `.env` file.
 
+> **Important:** You must configure Service Principal access for your Microsoft Entra app and Fabric workspace as described in the [official Microsoft documentation](https://learn.microsoft.com/en-us/fabric/data-engineering/api-graphql-service-principal). This includes enabling Service Principals in the Fabric Tenant Admin portal and granting the required permissions to your app.
+
 #### Setup
 
 1. **Install dependencies:**
@@ -41,10 +43,11 @@ This server connects to a Microsoft Fabric GraphQL API using OAuth2 client crede
 
 - The server will automatically obtain and refresh an access token for Microsoft Fabric.
 - All requests to the Fabric API are authenticated.
+- See [Microsoft's documentation](https://learn.microsoft.com/en-us/fabric/data-engineering/api-graphql-service-principal) for full details on configuring Service Principal access.
 
 ### 2. Public GraphQL API Option (`mcpServer_publicAPI.js`)
 
-This server connects to any public GraphQL API (no authentication required).
+This server connects to any public GraphQL API (no authentication required). The included example uses the public [Countries GraphQL API](https://countries.trevorblades.com/).
 
 #### Setup
 
@@ -63,6 +66,7 @@ This server connects to any public GraphQL API (no authentication required).
 #### Notes
 
 - No authentication is performed; use only with public GraphQL APIs.
+- The default example uses the Countries API for demonstration.
 
 ## Endpoints
 
