@@ -11,6 +11,9 @@ A Model Context Protocol (MCP) server for exposing GraphQL APIs as MCP tools. Th
 - Minimal session management for MCP protocol compliance
 - **Supports both public GraphQL APIs and Microsoft Fabric GraphQL APIs**
 
+> **Important Workflow Note:**
+> Before issuing any queries, the MCP client must first run the `introspect-schema` tool to retrieve the GraphQL schema from the backend. Once the schema is retrieved, the `query-graphql` tool can be used to issue queries based on the introspected schema.
+
 ## Server Options
 
 ### 1. Microsoft Fabric GraphQL API Integration (`mcpServer_fabricAPI.js`)
