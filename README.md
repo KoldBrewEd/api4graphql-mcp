@@ -150,6 +150,12 @@ curl -X POST http://localhost:3000/mcp \
    ```
 4. **View the results in the Copilot chat or output panel.**
 
+> **Example:**
+>
+> ![VSCode MCP Server Example - Customer List Query](./screenshot-vscode-mcpserver.png)
+>
+> _Screenshot: Retrieving a list of customers using the introspected Microsoft Fabric schema in VSCode with GitHub Copilot and MCP Server._
+
 > **Note:** If you use a different MCP client extension for VSCode, follow its instructions to add the MCP server and invoke tools.
 
 ### Using Cursor
