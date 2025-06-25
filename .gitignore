@@ -1,0 +1,6 @@
+package-lock.json
+mcp-graphql-server-1/minimal-mcp-server.js
+mcp-graphql-server-1/test-mcp-server.js
+mcp-graphql-server-1/src/mcpServer copy.js
+node_modules
+mcp-graphql-server-1/.env
