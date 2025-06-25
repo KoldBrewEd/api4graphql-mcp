@@ -1,63 +1,11 @@
-// MCP Server for Microsoft Fabric GraphQL API using Streamable HTTP
+// MCP Server for GraphQL API using Streamable HTTP
 import express from 'express';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { request, gql } from 'graphql-request';
 import { z } from 'zod';
-import dotenv from 'dotenv';
-import fetch from 'node-fetch';
 
-// Load environment variables
-dotenv.config();
-
-const MICROSOFT_FABRIC_API_URL = process.env.MICROSOFT_FABRIC_API_URL;
-const MICROSOFT_FABRIC_TENANT_ID = process.env.MICROSOFT_FABRIC_TENANT_ID;
-const MICROSOFT_FABRIC_CLIENT_ID = process.env.MICROSOFT_FABRIC_CLIENT_ID;
-const MICROSOFT_FABRIC_CLIENT_SECRET = process.env.MICROSOFT_FABRIC_CLIENT_SECRET;
-const SCOPE = process.env.SCOPE;
-
-// Token management
-let accessToken = null;
-let tokenExpiry = null;
-
-async function getAccessToken() {
-  // Check if we have a valid token
-  if (accessToken && tokenExpiry && Date.now() < tokenExpiry) {
-    return accessToken;
-  }
-
-  try {
-    const tokenUrl = `https://login.microsoftonline.com/${MICROSOFT_FABRIC_TENANT_ID}/oauth2/v2.0/token`;
-    
-    const response = await fetch(tokenUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        client_id: MICROSOFT_FABRIC_CLIENT_ID,
-        client_secret: MICROSOFT_FABRIC_CLIENT_SECRET,
-        scope: SCOPE,
-        grant_type: 'client_credentials',
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Token request failed: ${response.status} ${response.statusText}`);
-    }
-
-    const tokenData = await response.json();
-    accessToken = tokenData.access_token;
-    // Set expiry to 5 minutes before actual expiry to be safe
-    tokenExpiry = Date.now() + (tokenData.expires_in - 300) * 1000;
-    
-    console.log('Successfully obtained access token');
-    return accessToken;
-  } catch (error) {
-    console.error('Error obtaining access token:', error);
-    throw error;
-  }
-}
+const GRAPHQL_ENDPOINT = 'https://countries.trevorblades.com/';
 
 // Standard GraphQL introspection query
 const INTROSPECTION_QUERY = gql`
@@ -160,36 +108,20 @@ function generateSessionId() {
 
 // Create a single server instance
 const server = new McpServer({
-  name: 'microsoft-fabric-graphql-mcp-server',
+  name: 'graphql-mcp-server',
   version: '1.0.0',
 }, { capabilities: {} });
 
 // introspect-schema tool
 server.tool(
   'introspect-schema',
-  'Retrieves the GraphQL schema from the Microsoft Fabric endpoint.',
+  'Retrieves the GraphQL schema from the endpoint.',
   z.object({}),
   async () => {
     try {
-      const token = await getAccessToken();
-      const response = await fetch(MICROSOFT_FABRIC_API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          query: INTROSPECTION_QUERY,
-          variables: {}
-        })
-      });
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
-      }
-      const schema = await response.json();
+      const schema = await request(GRAPHQL_ENDPOINT, INTROSPECTION_QUERY);
       cachedSchema = schema;
+      // Return as a stringified JSON for MCP content
       return {
         content: [
           {
@@ -215,12 +147,20 @@ server.tool(
 // query-graphql tool
 server.tool(
   'query-graphql',
-  'Executes a GraphQL query against the Microsoft Fabric endpoint.',
+  'Executes a GraphQL query against the endpoint.',
   {
     query: z.string().describe('GraphQL query string'),
     variables: z.record(z.any()).optional().describe('GraphQL variables'),
   },
-  async ({ query, variables }) => {
+  async (args, context) => {
+    // Log everything for debugging
+    console.log('ARGS:', args);
+    console.log('CONTEXT:', context);
+
+    // Extract query and variables
+    const query = args.query;
+    const variables = args.variables;
+
     if (!cachedSchema) {
       const msg = 'Schema not available. Please run introspect-schema first.';
       console.error(msg);
@@ -234,24 +174,7 @@ server.tool(
       };
     }
     try {
-      const token = await getAccessToken();
-      const response = await fetch(MICROSOFT_FABRIC_API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          query,
-          variables: variables || {}
-        })
-      });
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
-      }
-      const data = await response.json();
+      const data = await request(GRAPHQL_ENDPOINT, query, variables);
       return {
         content: [
           {
@@ -285,9 +208,52 @@ app.use((req, res, next) => {
 });
 
 // MCP endpoint
+app.post('/mcp', (req, res, next) => {
+  console.log('RAW BODY:', req.body);
+  next();
+});
+
 app.post('/mcp', async (req, res) => {
   try {
-    // Create session manager
+    // Manual handling for query-graphql
+    if (
+      req.body &&
+      req.body.method === 'tools/call' &&
+      req.body.params &&
+      req.body.params.name === 'query-graphql'
+    ) {
+      const { query, variables } = req.body.params.arguments || {};
+      console.error('GRAPHQL REQUEST (manual):', { query, variables });
+      try {
+        const data = await request(GRAPHQL_ENDPOINT, query, variables);
+        return res.json({
+          result: {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(data)
+              }
+            ]
+          },
+          jsonrpc: '2.0',
+          id: req.body.id
+        });
+      } catch (err) {
+        return res.json({
+          result: {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify({ error: 'Failed to execute GraphQL query', details: err.message })
+              }
+            ]
+          },
+          jsonrpc: '2.0',
+          id: req.body.id
+        });
+      }
+    }
+    // Otherwise, use the SDK for other tools
     const sessionManager = {
       sessionIdGenerator: generateSessionId,
       getSession: (sessionId) => sessions.get(sessionId),
@@ -300,11 +266,7 @@ app.post('/mcp', async (req, res) => {
         sessions.delete(sessionId);
       }
     };
-
-    const transport = new StreamableHTTPServerTransport({
-      sessionManager
-    });
-    
+    const transport = new StreamableHTTPServerTransport({ sessionManager });
     await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
     res.on('close', () => {
@@ -318,18 +280,6 @@ app.post('/mcp', async (req, res) => {
   }
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'healthy', 
-    server: 'Microsoft Fabric GraphQL MCP Server',
-    hasToken: !!accessToken,
-    tokenExpiry: tokenExpiry ? new Date(tokenExpiry).toISOString() : null
-  });
-});
-
 app.listen(3000, () => {
-  console.log('Microsoft Fabric GraphQL MCP server listening on port 3000');
-  console.log('API URL:', MICROSOFT_FABRIC_API_URL);
-  console.log('Scope:', SCOPE);
+  console.log('MCP GraphQL server listening on port 3000');
 }); 
