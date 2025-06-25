@@ -1,6 +1,6 @@
 # MCP GraphQL Server
 
-A Model Context Protocol (MCP) server for exposing GraphQL APIs as MCP tools. This server demonstrates how to bridge any GraphQL API (here, the Countries API) to the MCP ecosystem, enabling natural language and programmatic access via MCP clients like Cursor.
+A Model Context Protocol (MCP) server for exposing GraphQL APIs as MCP tools. This server demonstrates how to bridge any GraphQL API (public or Microsoft Fabric) to the MCP ecosystem, enabling natural language and programmatic access via MCP clients like Cursor.
 
 ## Features
 
@@ -9,6 +9,60 @@ A Model Context Protocol (MCP) server for exposing GraphQL APIs as MCP tools. Th
 - Compatible with Cursor, Copilot, and any MCP client
 - Logs all queries and variables sent to the backend API
 - Minimal session management for MCP protocol compliance
+- **Supports both public GraphQL APIs and Microsoft Fabric GraphQL APIs**
+
+## Server Options
+
+### 1. Microsoft Fabric GraphQL API Integration (`mcpServer_fabricAPI.js`)
+
+This server connects to a Microsoft Fabric GraphQL API using OAuth2 client credentials. Credentials and endpoint are provided via a `.env` file.
+
+#### Setup
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+2. **Create a `.env` file in the project root:**
+   ```env
+   MICROSOFT_FABRIC_API_URL=https://your-fabric-endpoint/graphql
+   MICROSOFT_FABRIC_TENANT_ID=your_tenant_id_here
+   MICROSOFT_FABRIC_CLIENT_ID=your_client_id_here
+   MICROSOFT_FABRIC_CLIENT_SECRET=your_client_secret_here
+   SCOPE=https://api.fabric.microsoft.com/.default
+   ```
+3. **Start the server:**
+   ```bash
+   node mcpServer_fabricAPI.js
+   ```
+   The server will listen on port 3000 by default.
+
+#### Notes
+
+- The server will automatically obtain and refresh an access token for Microsoft Fabric.
+- All requests to the Fabric API are authenticated.
+
+### 2. Public GraphQL API Option (`mcpServer_publicAPI.js`)
+
+This server connects to any public GraphQL API (no authentication required).
+
+#### Setup
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+2. **Set the GraphQL endpoint:**
+   - Edit the `GRAPHQL_ENDPOINT` constant in `mcpServer_publicAPI.js` to your desired public GraphQL API URL.
+3. **Start the server:**
+   ```bash
+   node mcpServer_publicAPI.js
+   ```
+   The server will listen on port 3000 by default.
+
+#### Notes
+
+- No authentication is performed; use only with public GraphQL APIs.
 
 ## Endpoints
 
@@ -29,20 +83,6 @@ A Model Context Protocol (MCP) server for exposing GraphQL APIs as MCP tools. Th
   - `query` (string, required): The GraphQL query string
   - `variables` (object, optional): GraphQL variables
 - **Returns:** The query result as JSON
-
-## Setup
-
-1. **Install dependencies:**
-
-   ```bash
-   npm install
-   ```
-
-2. **Start the server:**
-   ```bash
-   node src/mcpServer.js
-   ```
-   The server will listen on port 3000 by default.
 
 ## Usage Examples
 
@@ -65,7 +105,7 @@ curl -X POST http://localhost:3000/mcp \
   }'
 ```
 
-**Query all countries and their capitals:**
+**Query example:**
 
 ```bash
 curl -X POST http://localhost:3000/mcp \
@@ -78,7 +118,7 @@ curl -X POST http://localhost:3000/mcp \
     "params": {
       "name": "query-graphql",
       "arguments": {
-        "query": "query { countries { name capital } }"
+        "query": "query { dimension_stock_items(first: 10) { items { StockItemKey StockItem Color Brand UnitPrice } } }"
       }
     }
   }'
@@ -91,11 +131,11 @@ curl -X POST http://localhost:3000/mcp \
    - URL: `http://localhost:3000/mcp`
 3. **In the Copilot chat or command palette, type:**
    ```
-   Show me all countries and their capitals
+   Show me all stock items with color, brand, and unit price
    ```
    or
    ```
-   Use the query-graphql tool with: { "query": "query { countries { name capital } }" }
+   Use the query-graphql tool with: { "query": "query { dimension_stock_items(first: 10) { items { StockItemKey StockItem Color Brand UnitPrice } } }" }
    ```
 4. **View the results in the Copilot chat or output panel.**
 
@@ -107,17 +147,18 @@ curl -X POST http://localhost:3000/mcp \
    - URL: `http://localhost:3000/mcp`
 2. In the chat, type:
    ```
-   Show me all countries and their capitals
+   Show me all stock items with color, brand, and unit price
    ```
    or
    ```
-   Use the query-graphql tool with: { "query": "query { countries { name capital } }" }
+   Use the query-graphql tool with: { "query": "query { dimension_stock_items(first: 10) { items { StockItemKey StockItem Color Brand UnitPrice } } }" }
    ```
 3. View the results in the chat.
 
 ## Customization
 
-- To change the backend GraphQL API, update the `GRAPHQL_ENDPOINT` constant in `src/mcpServer.js`.
+- To change the backend GraphQL API for public APIs, update the `GRAPHQL_ENDPOINT` constant in `mcpServer_publicAPI.js`.
+- For Microsoft Fabric, update your `.env` file with the correct credentials and endpoint.
 - You can add more MCP tools by registering them with `server.tool`.
 
 ## Troubleshooting
@@ -125,6 +166,7 @@ curl -X POST http://localhost:3000/mcp \
 - If you see errors about missing arguments, ensure your client sends the correct JSON-RPC payload.
 - If using Cursor and tools are not recognized, restart Cursor and re-add the MCP server.
 - All queries and variables sent to the backend API are logged in the server terminal for debugging.
+- For Microsoft Fabric, ensure your Azure App Registration has the correct permissions and your `.env` values are correct.
 
 ## License
 
