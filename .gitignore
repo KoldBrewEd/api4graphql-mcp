@@ -1,4 +1,5 @@
 package-lock.json
+src
 mcp-graphql-server-1/minimal-mcp-server.js
 mcp-graphql-server-1/test-mcp-server.js
 mcp-graphql-server-1/src/mcpServer copy.js
