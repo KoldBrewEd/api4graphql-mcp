@@ -5,7 +5,7 @@ A Model Context Protocol (MCP) server for exposing GraphQL APIs as MCP tools. Th
 ## Features
 
 - Exposes GraphQL APIs as MCP tools
-- Streamable HTTP implementation with Express, making it easier to adapt into more complex client-server integrations
+- Streamable HTTP implementation with Express, making it easier to use as a starting point for more complex client-server or web based integrations
 - Supports schema introspection and arbitrary GraphQL queries
 - Compatible with Cursor, Copilot, and any MCP client
 - Logs all queries and variables sent to the backend API
