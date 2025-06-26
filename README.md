@@ -140,7 +140,7 @@ curl -X POST http://localhost:3000/mcp \
 
 1. **Install the [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) extension in VSCode.**
 2. **Add your MCP server as a tool in Copilot Labs (if available) or use a compatible MCP client extension.**
-   ```
+   ```JSON
    "graphql-mcp-server": {
       "type": "http",
       "url": "http://localhost:3000/mcp"
@@ -167,7 +167,7 @@ curl -X POST http://localhost:3000/mcp \
 ### Using Cursor
 
 1. Add your MCP server in Cursor's MCP Tools:
-   ```
+   ```JSON
    "graphql-mcp-server": {
       "type": "http",
       "url": "http://localhost:3000/mcp"
