@@ -1,6 +1,6 @@
 # MCP GraphQL Server
 
-A Model Context Protocol (MCP) server for exposing GraphQL APIs as MCP tools. This server demonstrates how to bridge GraphQL APIs (Public or Microsoft Fabric) to the MCP ecosystem, enabling natural language and programmatic access via MCP clients like Cursor.
+A Model Context Protocol (MCP) server for exposing GraphQL APIs as MCP tools. This server demonstrates how to bridge GraphQL APIs (Public or Microsoft Fabric) to the MCP ecosystem, enabling natural language and programmatic access via MCP clients like GitHub Copilot.
 
 ## Features
 
@@ -140,7 +140,12 @@ curl -X POST http://localhost:3000/mcp \
 
 1. **Install the [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) extension in VSCode.**
 2. **Add your MCP server as a tool in Copilot Labs (if available) or use a compatible MCP client extension.**
-   - URL: `http://localhost:3000/mcp`
+   ```
+   "graphql-mcp-server": {
+      "type": "http",
+      "url": "http://localhost:3000/mcp"
+    }
+   ```
 3. **In the Copilot chat or command palette, type:**
    ```
    Show me all stock items with color, brand, and unit price
@@ -162,7 +167,12 @@ curl -X POST http://localhost:3000/mcp \
 ### Using Cursor
 
 1. Add your MCP server in Cursor's MCP Tools:
-   - URL: `http://localhost:3000/mcp`
+   ```
+   "graphql-mcp-server": {
+      "type": "http",
+      "url": "http://localhost:3000/mcp"
+    }
+   ```
 2. In the chat, type:
    ```
    Show me all stock items with color, brand, and unit price
