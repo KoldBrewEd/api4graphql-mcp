@@ -2,6 +2,10 @@
 
 A Model Context Protocol (MCP) server for exposing GraphQL APIs as MCP tools. This server demonstrates how to bridge GraphQL APIs (Public or Microsoft Fabric) to the MCP ecosystem, enabling natural language and programmatic access via MCP clients like GitHub Copilot.
 
+> ![VSCode MCP Server Example - Customer List Query](./screenshot-vscode-mcpserver.png)
+>
+> _Screenshot: Retrieving a list of customers using the introspected Microsoft Fabric GraphQL API schema in VSCode with GitHub Copilot and MCP Server._
+
 ## Features
 
 - Exposes GraphQL APIs as MCP tools
@@ -155,12 +159,6 @@ curl -X POST http://localhost:3000/mcp \
    Use the query-graphql tool with: { "query": "query { dimension_stock_items(first: 10) { items { StockItemKey StockItem Color Brand UnitPrice } } }" }
    ```
 4. **View the results in the Copilot chat or output panel.**
-
-> **Example:**
->
-> ![VSCode MCP Server Example - Customer List Query](./screenshot-vscode-mcpserver.png)
->
-> _Screenshot: Retrieving a list of customers using the introspected Microsoft Fabric schema in VSCode with GitHub Copilot and MCP Server._
 
 > **Note:** If you use a different MCP client extension for VSCode, follow its instructions to add the MCP server and invoke tools.
 
